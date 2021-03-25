@@ -1,3 +1,9 @@
 [submodule "c_utils"]
 	path = c_utils
 	url = https://github.com/thebombshell/c_utils
+[submodule "win_utils"]
+	path = win_utils
+	url = https://github.com/thebombshell/win_utils
+[submodule "graphics_utils"]
+	path = graphics_utils
+	url = https://github.com/thebombshell/graphics_utils

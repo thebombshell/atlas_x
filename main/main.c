@@ -1,13 +1,11 @@
 
 #include "main.h"
 
-#include "../entity_component.h"
-#include "../graphics.h"
-#include "../log.h"
-#include "../vector_math.h"
-#include "../window.h"
+#include <graphics.h>
+#include <log.h>
+#include <vector_math.h>
+#include <window.h>
 
-#include "map.h"
 #include "shaders.h"
 #include <time.h>
 
@@ -18,10 +16,10 @@ static float current_time = 0.0f;
 
 char input[255];
 
-LRESULT CALLBACK window_proc(HWND t_handle, UINT t_message, WPARAM t_wparam, LPARAM t_lparam) {
-	
-	switch (t_message) {
-		
+LRESULT CALLBACK window_proc(HWND t_handle, UINT t_message, WPARAM t_wparam, LPARAM t_lparam) 
+{	
+	switch (t_message)
+	{		
 		case WM_KEYDOWN:
 		
 			input[t_wparam] = 1;
@@ -45,23 +43,25 @@ LRESULT CALLBACK window_proc(HWND t_handle, UINT t_message, WPARAM t_wparam, LPA
 	return DefWindowProc(t_handle, t_message, t_wparam, t_lparam);
 }
 
-char is_key_down(char t_key) {
-	
+char is_key_down(char t_key)
+{	
 	return input[(unsigned int)t_key];
 }
 
-int init() {
+int init()
+{
+	(void)current_time;
 	
 	return 1;
 }
 
-int final() {
-	
+int final()
+{	
 	return 1;
 }
 
-int main() {
-	
+int main()
+{	
 	int is_running = 0xFFFF;
 	
 	SYS("initializing window");
@@ -84,8 +84,8 @@ int main() {
 	long long diff, start, length;
 	MSG message;
 	
-	if (!init()) {
-		
+	if (!init())
+	{		
 		SYS("initialization failed");
 		is_running = 0;
 	}
@@ -94,19 +94,23 @@ int main() {
 	
 	start = clock();
 	
-	while (is_running) {
-		
+	while (is_running)
+	{		
 		diff = clock() - start;
 		delta = (double)diff / (double)CLOCKS_PER_SEC;
+		current_time += delta;
+		
+		(void)delta;
+		(void)current_time;
 		
 		start = clock();
 		
 		/* windows message handling */
 		
-		while (PeekMessage(&message, 0, 0, 0, PM_REMOVE)) {
-			
-			if (message.message == WM_QUIT || message.message == WM_CLOSE) {
-				
+		while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
+		{			
+			if (message.message == WM_QUIT || message.message == WM_CLOSE)
+			{				
 				SYS("setting running to false");
 				
 				is_running = 0;
@@ -120,18 +124,20 @@ int main() {
 			DispatchMessage(&message);
 		}
 		
+		graphics_swap_buffers(&context);
+		
 		/* timing */
 		
 		diff = clock() - start;
 		length = diff * (1000 / CLOCKS_PER_SEC);
-		if (length < 1000 / 60) {
-			
+		if (length < 1000 / 60)
+		{			
 			Sleep(1000 / 60 - length);
 		}
 	}
 	
-	if (!final()) {
-		
+	if (!final())
+	{		
 		SYS("initialization succeeded");
 	}
 	

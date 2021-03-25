@@ -6,10 +6,11 @@ CFLAGS = -std=c89 -Wall -Werror -Wfatal-errors
 
 MODULES = $(sort $(dir $(wildcard /modules/*/)))
 
-SOURCES := $(wildcard *.c)
+MODULES := c_utils win_utils graphics_utils
+SOURCES := $(wildcard *.c $(patsubst %, %/*.c, $(MODULES)))
 OBJECTS := $(patsubst %.c, objects/%.o, $(SOURCES))
 
-INCLUDE :=
+INCLUDE := -I"$(abspath .)" $(patsubst %, -I"$(abspath %)", $(MODULES))
 LDFLAGS := -lopengl32 -lgdi32 -shared-libgcc
 GDBFLAGS = -cd ./output/
 
@@ -22,16 +23,28 @@ DEFINES = -DNDEBUG
 OPTIMIZE = -Os -s
 endif
 
-all: clean build
+submodule-push:
+	git submodule foreach 'git commit -a || :'
+	git submodule foreach 'git push || :'
 
-build: $(OBJECTS) main/main.c main/main.h copy
+submodule-pull:
+	git submodule foreach 'git pull || :'
+
+all: directories clean build
+
+directories:
+	-mkdir "output"
+	-md "output"
+	-mkdir "objects"
+	-md "objects"
+
+build: $(OBJECTS) main/main.c main/main.h
 	$(C) $(DEFINES) $(OPTIMIZE) $(CFLAGS) $(OBJECTS) $(INCLUDE) -Imain main/main.c -o output/main.exe $(LDFLAGS)
 
 ./objects/%.o: ./%.c  ./%.h
+	-mkdir "$(@D)"
+	-md "$(@D)"
 	$(C) $(DEFINES) $(CFLAGS) $(INCLUDE) -c $< -o $@
-
-copy:
-	copy .\\consolas_sprite_font.png .\\output\\consolas_sprite_font
 
 clean:
 	-rm ./objects/*.o ./output/*.exe -f
