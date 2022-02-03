@@ -8,6 +8,7 @@
 
 #include "shaders.h"
 #include <time.h>
+#include <fbx_import.h>
 
 window surface;
 graphics context;
@@ -51,6 +52,24 @@ char is_key_down(char t_key)
 int init()
 {
 	(void)current_time;
+	
+	fbx _fbx;
+	if (fbx_load(&_fbx, "test.fbx"))
+	{
+		LOG("load fbx successful");
+		
+		buffer out_buffer;
+		
+		fbx_stringify(&_fbx, &out_buffer); 
+		
+		fbx_final(&_fbx);
+		
+		WRN("%s", (char*)out_buffer.data);
+	}
+	else
+	{
+		ERR("failed to load fbx");
+	}
 	
 	return 1;
 }
@@ -152,3 +171,5 @@ int main()
 	
 	return 0;
 }
+
+

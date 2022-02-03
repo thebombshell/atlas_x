@@ -50,3 +50,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# atlas ignores
+c_utils/*
+atlas_utils/*
+graphics_utils/*
+network_utils/*
+win_utils/*
+main/*
+objects/*
+disassembly/*
+output/*
