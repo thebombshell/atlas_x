@@ -2,7 +2,7 @@
 C = gcc
 GDB = gdb
 
-CFLAGS = -std=c89 -Wall -Werror -Wfatal-errors
+CFLAGS = -std=c89 -Wno-int-to-pointer-cast -Wall -Werror -Wfatal-errors
 
 MODULES = $(sort $(dir $(wildcard /modules/*/)))
 
