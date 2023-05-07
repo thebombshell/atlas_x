@@ -55,12 +55,17 @@ int init()
 	
 	fbx _fbx;
 	if (fbx_load(&_fbx, "test.fbx"))
-	{
+	{	
 		LOG("load fbx successful");
 		
 		buffer out_buffer;
 		
-		fbx_stringify(&_fbx, &out_buffer); 
+		int result = fbx_stringify(&_fbx, &out_buffer); 
+		
+		if (!result)
+		{
+			ERR("stringify has failed");
+		}
 		
 		fbx_final(&_fbx);
 		
