@@ -8,14 +8,22 @@
 
 #include "shaders.h"
 #include <time.h>
-#include <fbx_import.h>
+#include <thread.h>
+#include <json_import.h>
 
 window surface;
 graphics context;
 
-static float current_time = 0.0f;
+thread update_thread;
 
+int is_running = 0xFFFF;
+
+static float current_time = 0.0f;
 char input[255];
+
+unsigned int json_read_succeeded = 0;
+unsigned int json_stringify_complete = 0;
+json_file json;
 
 LRESULT CALLBACK window_proc(HWND t_handle, UINT t_message, WPARAM t_wparam, LPARAM t_lparam) 
 {	
@@ -49,44 +57,81 @@ char is_key_down(char t_key)
 	return input[(unsigned int)t_key];
 }
 
+void update()
+{
+	if (json_read_succeeded && !json_stringify_complete)
+	{
+		json_stringify_complete = 1;
+		
+		buffer string;
+		
+		if (json_stringify(&json, &string))
+		{
+			LOG("json stringify succeeded: %s", (const char*)string.data);
+			
+			buffer_final(&string);
+		}
+		else
+		{
+			ERR("failed to stringify json!");
+		}
+	}
+}
+
+void update_thread_func(void*)
+{
+	LOG("update thread starting");
+	
+	while (is_running)
+	{
+		update();
+	}
+	
+	LOG("update thread ending");
+}
+
 int init()
 {
 	(void)current_time;
 	
-	fbx _fbx;
-	if (fbx_load(&_fbx, "test.fbx"))
-	{	
-		LOG("load fbx successful");
-		
-		buffer out_buffer;
-		
-		int result = fbx_stringify(&_fbx, &out_buffer); 
-		
-		if (!result)
-		{
-			ERR("stringify has failed");
-		}
-		
-		fbx_final(&_fbx);
-		
-		WRN("%s", (char*)out_buffer.data);
+	int result = 0;
+	
+	if (json_load(&json, "test.gltf"))
+	{
+		json_read_succeeded = 1;
+		LOG("load json successful");
 	}
 	else
 	{
-		ERR("failed to load fbx");
+		ERR("load json failed");
+	}
+	
+	result = thread_init(&update_thread, update_thread_func, 0);
+	
+	if (!result)
+	{
+		ERR("failed to init thread");
 	}
 	
 	return 1;
 }
 
 int final()
-{	
+{
+	thread_join(&update_thread);
+	
+	thread_final(&update_thread);
+	
+	if (json_read_succeeded)
+	{	
+		json_final(&json);
+	}
+	
 	return 1;
 }
 
 int main()
-{	
-	int is_running = 0xFFFF;
+{
 	
 	SYS("initializing window");
 	
@@ -162,7 +207,7 @@ int main()
 	
 	if (!final())
 	{		
-		SYS("initialization succeeded");
+		SYS("finalization failed");
 	}
 	
 	
